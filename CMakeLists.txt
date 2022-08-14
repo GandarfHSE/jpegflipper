@@ -33,12 +33,16 @@ set(SRC_LIST main.cpp)
 
 add_executable(${PROJECT_NAME} ${SRC_LIST})
 
-target_link_libraries(${PROJECT_NAME}
-  PUBLIC
-    ${LIBEVENT_LIB}
-)
+target_link_libraries(${PROJECT_NAME} PUBLIC ${LIBEVENT_LIB})
 
-target_include_directories(${PROJECT_NAME}
-  PUBLIC
-    ${LIBEVENT_INCLUDE_DIR}
-)
+target_include_directories(${PROJECT_NAME} PUBLIC ${LIBEVENT_INCLUDE_DIR})
+
+# Находим Magick++
+add_definitions( -DMAGICKCORE_QUANTUM_DEPTH=16 )
+add_definitions( -DMAGICKCORE_HDRI_ENABLE=0 )
+
+find_package(ImageMagick COMPONENTS Magick++)
+
+include_directories(${ImageMagick_INCLUDE_DIRS})
+
+target_link_libraries(${PROJECT_NAME} ${ImageMagick_LIBRARIES})

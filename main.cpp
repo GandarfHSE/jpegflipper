@@ -1,6 +1,8 @@
 ﻿#include <iostream>
 #include <memory>
-#include "evhttp.h"
+#include <cstdint>
+#include <evhttp.h>
+#include <Magick++.h>
 
 #define TRY(pred, msg) do { \
     if (!(pred)) { \
@@ -15,19 +17,36 @@ void gen_cb(evhttp_request* request, void* arg) {
     std::cerr << "Generic callback\n";
     evbuffer* inBuf = evhttp_request_get_input_buffer(request);
     evbuffer* outBuf = evhttp_request_get_output_buffer(request);
+
+    size_t imgLen = evbuffer_get_length(inBuf);
+    char buf[imgLen + 3];
     
+    size_t readTotal = 0;
     while (evbuffer_get_length(inBuf)) {
-        evbuffer_remove_buffer(inBuf, outBuf, 1024);
+        int readNow = evbuffer_remove(inBuf, &buf[readTotal], imgLen);
+        if (readNow > 0) {
+            readTotal += readNow;
+        }
+    }
+    
+    // work with image
+    Magick::Blob blob((void *)buf, imgLen + 1);
+    Magick::Image image(blob);
+    image.flop();
+    image.write(&blob);
+
+    if (evbuffer_add(outBuf, blob.data(), blob.length()) == -1) {
+        std::cerr << "copy error occured\n";
     }
 
     evhttp_send_reply(request, HTTP_OK, "", outBuf);
 }
 
-bool isWorking = true;
+bool _isWorking = true;
 
 void exit_cb(evhttp_request* request, void* arg) {
     std::cerr << "Exit callback\n";
-    isWorking = false;
+    _isWorking = false;
     evhttp_send_reply(request, HTTP_OK, "", nullptr);
 }
 
@@ -36,6 +55,8 @@ int main(int argc, char** argv) {
         std::cout << "Usage: " << *argv[0] << " [address][port]\n";
         return 0;
     }
+
+    Magick::InitializeMagick(nullptr);
 
     char* address = argv[1];
     uint16_t port = atoi(argv[2]);
@@ -59,7 +80,7 @@ int main(int argc, char** argv) {
     TRY(evhttp_accept_socket(serverPtr.get(), socketFD) == 0, "connection accept");
 
     // event loop
-    while (isWorking) {
+    while (_isWorking) {
         event_base_loop(evBasePtr.get(), EVLOOP_NONBLOCK);
     }
 
