@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 3.2)
 
 project(jpegflipper)
 
@@ -29,7 +29,7 @@ find_package_handle_standard_args(
   LIBEVENT_INCLUDE_DIR
 )
 
-set(SRC_LIST main.cpp)
+set(SRC_LIST main.cpp task.cpp threadpool.cpp)
 
 add_executable(${PROJECT_NAME} ${SRC_LIST})
 
@@ -45,4 +45,9 @@ find_package(ImageMagick COMPONENTS Magick++)
 
 include_directories(${ImageMagick_INCLUDE_DIRS})
 
-target_link_libraries(${PROJECT_NAME} ${ImageMagick_LIBRARIES})
+target_link_libraries(${PROJECT_NAME} PUBLIC ${ImageMagick_LIBRARIES})
+
+target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_17)
+
+set(CMAKE_THREAD_LIBS_INIT "-lpthread")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread")
