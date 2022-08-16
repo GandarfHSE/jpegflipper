@@ -1,43 +1,35 @@
-#pragma once
 #include <iostream>
 
 #include <evhttp.h>
 #include <Magick++.h>
 
-class CbTask {
-public:
-    CbTask(evhttp_request* req) : request(req) {
+#include "task.h"
+
+// Do generic callback
+void CbTask::operator() () {
+    evbuffer* inBuf = evhttp_request_get_input_buffer(request);
+    evbuffer* outBuf = evhttp_request_get_output_buffer(request);
+
+    size_t imgLen = evbuffer_get_length(inBuf);
+    char buf[imgLen + 3];
+
+    size_t readTotal = 0;
+    while (evbuffer_get_length(inBuf)) {
+        int readNow = evbuffer_remove(inBuf, &buf[readTotal], imgLen);
+        if (readNow > 0) {
+            readTotal += readNow;
+        }
     }
 
-    // Do generic callback
-    void operator() () {
-        evbuffer* inBuf = evhttp_request_get_input_buffer(request);
-        evbuffer* outBuf = evhttp_request_get_output_buffer(request);
+    // work with image
+    Magick::Blob blob((void*)buf, imgLen + 1);
+    Magick::Image image(blob);
+    image.flop();
+    image.write(&blob);
 
-        size_t imgLen = evbuffer_get_length(inBuf);
-        char buf[imgLen + 3];
-
-        size_t readTotal = 0;
-        while (evbuffer_get_length(inBuf)) {
-            int readNow = evbuffer_remove(inBuf, &buf[readTotal], imgLen);
-            if (readNow > 0) {
-                readTotal += readNow;
-            }
-        }
-
-        // work with image
-        Magick::Blob blob((void*)buf, imgLen + 1);
-        Magick::Image image(blob);
-        image.flop();
-        image.write(&blob);
-
-        if (evbuffer_add(outBuf, blob.data(), blob.length()) == -1) {
-            evhttp_send_reply(request, HTTP_INTERNAL, "copy error occured", nullptr);
-        }
-
-        evhttp_send_reply(request, HTTP_OK, "", outBuf);
+    if (evbuffer_add(outBuf, blob.data(), blob.length()) == -1) {
+        evhttp_send_reply(request, HTTP_INTERNAL, "copy error occured", nullptr);
     }
 
-private:
-    evhttp_request *request;
-};
+    evhttp_send_reply(request, HTTP_OK, "", outBuf);
+}

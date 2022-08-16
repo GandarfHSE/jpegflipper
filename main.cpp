@@ -5,8 +5,8 @@
 #include <evhttp.h>
 #include <Magick++.h>
 
-#include "task.cpp"
-#include "threadpool.cpp"
+#include "task.h"
+#include "threadpool.h"
 
 #define TRY(pred, msg) do { \
     if (!(pred)) { \
@@ -21,8 +21,9 @@ bool _isWorking = true;
 ThreadPool pool;
 
 void gen_cb(evhttp_request* request, void* arg) {
+    std::cerr << "Generic callback\n";
     CbTask task(request);
-    if (!pool.pushTask(task)) {
+    if (!pool.PushTask(task)) {
         evhttp_send_reply(request, HTTP_SERVUNAVAIL, "", nullptr);
     }
 }
