@@ -1,8 +1,5 @@
 #pragma once
-#include <iostream>
-
 #include <evhttp.h>
-#include <Magick++.h>
 
 class CbTask {
 public:

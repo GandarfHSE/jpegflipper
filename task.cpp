@@ -1,5 +1,3 @@
-#include <iostream>
-
 #include <evhttp.h>
 #include <Magick++.h>
 
