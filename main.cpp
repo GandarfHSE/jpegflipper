@@ -36,7 +36,7 @@ void exit_cb(evhttp_request* request, void* arg) {
 
 int main(int argc, char** argv) {
     if (argc != 3) {
-        std::cout << "Usage: " << *argv[0] << " [address][port]\n";
+        printf("Usage: %s [address][port]\n", argv[0]);
         return 0;
     }
 
