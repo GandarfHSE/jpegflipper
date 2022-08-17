@@ -1,3 +1,4 @@
+#include <chrono>
 #include <condition_variable>
 #include <deque>
 #include <mutex>
@@ -74,5 +75,6 @@ bool ThreadPool::PushTask(CbTask task) {
 void ThreadPool::Run() {
     while (auto task = q_.Pop()) {
         (*task)();
+        std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }
 }

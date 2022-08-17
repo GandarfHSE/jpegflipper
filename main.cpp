@@ -1,6 +1,8 @@
 ﻿#include <iostream>
+#include <chrono>
 #include <cstdint>
 #include <memory>
+#include <thread>
 
 #include <evhttp.h>
 #include <Magick++.h>
@@ -63,6 +65,7 @@ int main(int argc, char** argv) {
     // event loop
     while (_isWorking) {
         event_base_loop(evBasePtr.get(), EVLOOP_NONBLOCK);
+        std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }
 
     evhttp_del_accept_socket(serverPtr.get(), boundSocketPtr);
