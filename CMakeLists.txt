@@ -51,3 +51,4 @@ target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_17)
 
 set(CMAKE_THREAD_LIBS_INIT "-lpthread")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread")
+target_link_libraries(${PROJECT_NAME} PUBLIC pthread event_pthreads)

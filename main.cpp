@@ -5,6 +5,9 @@
 #include <thread>
 
 #include <evhttp.h>
+#include <event2/visibility.h>
+#include <event2/event-config.h>
+#include <event2/thread.h>
 #include <Magick++.h>
 
 #include "task.h"
@@ -43,6 +46,7 @@ int main(int argc, char** argv) {
     }
 
     Magick::InitializeMagick(nullptr);
+    evthread_use_pthreads();
 
     char* address = argv[1];
     uint16_t port = atoi(argv[2]);
